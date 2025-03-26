@@ -65,8 +65,7 @@ export default function Home() {
         }}
       >
         Validate your business idea instantly with our AI-powered tool. Enter
-        your concept below and get a direct, data-driven analysis—no sugarcoating
-        included.
+        your concept below and get a direct, data-driven analysis.
       </p>
 
       {/* Form Section */}
@@ -152,3 +151,6 @@ export default function Home() {
     </main>
   );
 }
+
+
+

@@ -1,22 +1,21 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
+import { getTrendsData } from "./getTrends";
 
 export async function POST(request) {
   try {
+    // Parse the JSON body from the request
     const { idea } = await request.json();
 
     if (!idea) {
       return new NextResponse("Business idea is required", { status: 400 });
     }
 
-    const openaiResponse = await axios.post(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        model: "gpt-3.5-turbo", // or gpt-4 if you have access
-        messages: [
-          {
-            role: "system",
-            content: `
+    // Fetch Google Trends data for the given idea
+    const trendsData = await getTrendsData(idea);
+
+    // Prepare the system prompt with the trends data included
+    const systemPrompt = `
 You are a seasoned business consultant with decades of experience evaluating business ideas for a top-tier consulting firm. Your role is to provide a comprehensive, data-driven, and objective analysis of any business idea provided. Your evaluation must be structured, detailed, and direct, leaving no ambiguity for the entrepreneur. Avoid any sugarcoating; be clear, precise, and forthright in your assessments.
 
 For each business idea, your response must address the following categories:
@@ -50,24 +49,36 @@ For each business idea, your response must address the following categories:
    - Suggest any modifications or additional research that could enhance the viability of the idea.
    - Present your conclusions in a direct, no-nonsense manner, ensuring that an entrepreneur would not need to ask multiple follow-up questions.
 
-Your response should be organized in an essay format with clear headings for each section (Market Potential, Competition, Viability, Risks, and Recommendations). Use bullet points or numbered lists where appropriate to enhance readability. If data is insufficient, state this explicitly and note what additional information would be beneficial.
+In addition, incorporate the following Google Trends data into your analysis:
+Google Trends Data (Interest Over Time):
+${JSON.stringify(trendsData, null, 2)}
 
 Business Idea: ${idea}
-            `
+    `;
+
+    // Call OpenAI API with the system prompt including trends data
+    const openaiResponse = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "gpt-3.5-turbo", // or "gpt-4" if available
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt,
           },
           {
             role: "user",
-            content: `Business Idea: ${idea}`
-          }
+            content: `Business Idea: ${idea}`,
+          },
         ],
-        max_tokens: 500,
-        temperature: 0.7
+        max_tokens: 700,
+        temperature: 0.7,
       },
       {
         headers: {
           Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-          "Content-Type": "application/json"
-        }
+          "Content-Type": "application/json",
+        },
       }
     );
 
@@ -75,7 +86,7 @@ Business Idea: ${idea}
 
     return new NextResponse(result.trim(), {
       status: 200,
-      headers: { "Content-Type": "text/plain" }
+      headers: { "Content-Type": "text/plain" },
     });
   } catch (error) {
     console.error("OpenAI API Error:", error.response?.data || error.message);
