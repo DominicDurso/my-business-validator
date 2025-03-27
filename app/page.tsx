@@ -4,7 +4,6 @@ import React, { useState, FormEvent, CSSProperties } from "react";
 
 /** 
  * A helper type that maps string keys to valid React.CSSProperties. 
- * This tells TypeScript that each style object is a valid set of inline styles.
  */
 type StyleMap = {
   [key: string]: CSSProperties;
@@ -17,84 +16,56 @@ const styles: StyleMap = {
     color: "#fff",
     fontFamily:
       "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
-  },
-  header: {
-    width: "100%",
-    padding: "1rem 2rem",
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottom: "1px solid #333",
+    flexDirection: "column",
   },
-  title: {
-    fontSize: "1.8rem",
-    margin: 0,
-  },
-  nav: {
-    display: "flex",
-    gap: "1.5rem",
-  },
-  navLink: {
-    color: "#fff",
-    textDecoration: "none",
-    fontSize: "1rem",
-    transition: "color 0.2s ease",
-  },
-  // Darker hero background
   hero: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+    overflow: "hidden",
     textAlign: "center" as const,
-    padding: "2rem 1rem",
-    // Darker gradient
-    background: "linear-gradient(90deg, #0c0c0c, #1c1c1c)",
+  },
+  heroBackground: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    background:
+      "radial-gradient(closest-corner at 50% 50%, #1a1a1a, #000)",
+    animation: "fadeGradient 10s infinite alternate",
+    zIndex: 0,
+  },
+  heroContent: {
+    zIndex: 1,
+    maxWidth: "600px",
+    margin: "0 auto",
+    padding: "2rem",
   },
   heroTitle: {
-    fontSize: "2rem",
-    margin: "0.5rem 0",
-    color: "#da00ff",
-  },
-  heroText: {
-    fontSize: "1.2rem",
-    margin: "0.5rem 0",
-  },
-  metricsSection: {
-    display: "flex",
-    justifyContent: "center",
-    gap: "2rem",
-    padding: "1rem",
-  },
-  metricCard: {
-    backgroundColor: "#111",
-    padding: "1rem 1.5rem",
-    borderRadius: "8px",
-    boxShadow: "0 0 10px rgba(255, 255, 255, 0.05)",
-    textAlign: "center" as const,
-  },
-  metricValue: {
-    fontSize: "1.8rem",
+    fontSize: "3rem",
     margin: 0,
-    color: "#da00ff",
+    marginBottom: "1rem",
+    color: "#fff",
   },
-  metricLabel: {
-    fontSize: "0.9rem",
-    margin: "0.5rem 0 0",
+  heroSubtitle: {
+    fontSize: "1.2rem",
+    marginBottom: "2rem",
     color: "#aaa",
   },
   formContainer: {
-    width: "100%",
-    maxWidth: "600px",
-    padding: "2rem",
-    margin: "2rem auto",
     backgroundColor: "#111",
     borderRadius: "8px",
+    padding: "2rem",
     boxShadow: "0 0 20px rgba(255, 255, 255, 0.05)",
   },
-  form: {
-    display: "flex",
-    flexDirection: "column" as const,
-  },
   label: {
+    display: "block",
     marginBottom: "0.5rem",
-    fontSize: "1rem",
     fontWeight: "bold",
   },
   textarea: {
@@ -134,15 +105,26 @@ const styles: StyleMap = {
   responseContent: {
     whiteSpace: "pre-wrap" as const,
     fontSize: "1rem",
-    lineHeight: 1.5,
+    lineHeight: 1.6,
   },
   footer: {
-    width: "100%",
     textAlign: "center" as const,
     padding: "1rem",
     borderTop: "1px solid #333",
   },
 };
+
+// Keyframe animation for subtle gradient fade
+const fadeGradient = `
+@keyframes fadeGradient {
+  0% {
+    background: radial-gradient(closest-corner at 50% 50%, #1a1a1a, #000);
+  }
+  100% {
+    background: radial-gradient(closest-corner at 50% 50%, #2a2a2a, #000);
+  }
+}
+`;
 
 export default function Home() {
   const [idea, setIdea] = useState("");
@@ -171,53 +153,38 @@ export default function Home() {
 
   return (
     <main style={styles.main}>
-      {/* Header Section */}
-      <header style={styles.header}>
-        <h1 style={styles.title}>Business Idea Validator</h1>
-        <nav style={styles.nav}>
-          <a style={styles.navLink} href="/">Home</a>
-          <a style={styles.navLink} href="/about">About</a>
-        </nav>
-      </header>
+      {/* Insert the keyframe animation globally */}
+      <style>{fadeGradient}</style>
 
       {/* Hero Section */}
       <section style={styles.hero}>
-        <h2 style={styles.heroTitle}>Instant, Data-Driven Insights</h2>
-        <p style={styles.heroText}>
-          Our AI-powered tool validates your business ideas using real-world data and trends.
-        </p>
-      </section>
+        <div style={styles.heroBackground} />
+        <div style={styles.heroContent}>
+          <h1 style={styles.heroTitle}>Grok-Inspired Validator</h1>
+          <p style={styles.heroSubtitle}>
+            Get bullet-pointed insights for your business ideas—fast.
+          </p>
 
-      {/* Metrics Section */}
-      <section style={styles.metricsSection}>
-        <div style={styles.metricCard}>
-          <h3 style={styles.metricValue}>1,250+</h3>
-          <p style={styles.metricLabel}>Ideas Validated</p>
+          {/* Form Container */}
+          <div style={styles.formContainer}>
+            <form onSubmit={handleSubmit}>
+              <label htmlFor="idea" style={styles.label}>
+                Enter your business idea:
+              </label>
+              <textarea
+                id="idea"
+                value={idea}
+                onChange={(e) => setIdea(e.target.value)}
+                rows={5}
+                placeholder="Describe your business idea here..."
+                style={styles.textarea}
+              />
+              <button type="submit" disabled={loading} style={styles.button}>
+                {loading ? "Validating..." : "Validate Idea"}
+              </button>
+            </form>
+          </div>
         </div>
-        <div style={styles.metricCard}>
-          <h3 style={styles.metricValue}>95%</h3>
-          <p style={styles.metricLabel}>User Satisfaction</p>
-        </div>
-      </section>
-
-      {/* Form Section */}
-      <section style={styles.formContainer}>
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <label htmlFor="idea" style={styles.label}>
-            Enter your business idea:
-          </label>
-          <textarea
-            id="idea"
-            value={idea}
-            onChange={(e) => setIdea(e.target.value)}
-            rows={5}
-            placeholder="Describe your business idea here..."
-            style={styles.textarea}
-          />
-          <button type="submit" disabled={loading} style={styles.button}>
-            {loading ? "Validating..." : "Validate Idea"}
-          </button>
-        </form>
       </section>
 
       {/* Response Section */}
@@ -225,7 +192,6 @@ export default function Home() {
         <section style={styles.responseSection}>
           <div
             style={styles.responseContent}
-            // We return HTML from the API, so we render it directly
             dangerouslySetInnerHTML={{ __html: response }}
           />
         </section>
@@ -233,7 +199,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer style={styles.footer}>
-        <p>© {new Date().getFullYear()} Business Idea Validator. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Grok-Inspired Validator. All rights reserved.</p>
       </footer>
     </main>
   );

@@ -10,23 +10,22 @@ export async function POST(request) {
       return new NextResponse("Business idea is required", { status: 400 });
     }
 
-    // Fetch Google Trends data (optional helper)
+    // Optionally fetch Google Trends data
     const trendsData = await getTrendsData(idea);
 
-    // Updated system prompt: force a consistent numbered structure
+    // Updated system prompt:
+    // GPT should use headings like "## Market Potential" and bullet points "- "
+    // No other Markdown or HTML.
     const systemPrompt = `
-You are a seasoned business consultant. Provide a comprehensive, data-driven analysis of the user's business idea. 
-Use exactly the following numbered headings (in this order, with the exact numbering):
+You are a seasoned business consultant. Provide a thorough analysis of the user's business idea in five sections:
+## Market Potential
+## Competition
+## Viability
+## Risks
+## Recommendations
 
-1. Market Potential
-2. Competition
-3. Viability
-4. Risks
-5. Recommendations
-
-Write in paragraphs. Do not use bullet points or asterisks. If you need multiple points, separate them by line breaks(these are encouraged).
-Incorporate this Google Trends data into your analysis:
-Google Trends Data:
+Under each heading, use bullet points that begin with "- " to list key points. No other Markdown or symbols. 
+Incorporate the following Google Trends data where relevant:
 ${JSON.stringify(trendsData, null, 2)}
 
 Business Idea: ${idea}
@@ -36,12 +35,12 @@ Business Idea: ${idea}
     const openaiResponse = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
-        model: "gpt-3.5-turbo", // or "gpt-4" if you have access
+        model: "gpt-3.5-turbo",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Business Idea: ${idea}` },
         ],
-        max_tokens: 700,
+        max_tokens: 1000,
         temperature: 0.7,
       },
       {
@@ -52,35 +51,61 @@ Business Idea: ${idea}
       }
     );
 
-    // Raw AI response text
-    let result = openaiResponse.data.choices[0].message.content;
+    // Raw GPT output
+    let rawText = openaiResponse.data.choices[0].message.content;
 
-    // 1) Remove Markdown symbols (#, *) and any leading "- " if you want to remove leftover bullet points
-    result = result
-      .replace(/#/g, "")
-      .replace(/\*/g, "")
-      .replace(/^\s*-\s+/gm, ""); // remove lines starting with "- "
+    // Remove leftover markdown symbols (#, *) just in case
+    rawText = rawText.replace(/\*/g, "");
 
-    // 2) Convert each numbered heading into <h2> with the same text
-    //    We'll do a simple array for the headings we expect
-    const headings = [
-      "1. Market Potential",
-      "2. Competition",
-      "3. Viability",
-      "4. Risks",
-      "5. Recommendations",
-    ];
+    // Convert the GPT "pseudo-Markdown" to HTML
+    // We'll parse line-by-line, turning headings "## " into <h2> and bullet lines "- " into <li>.
+    // We also wrap bullet lines in a <ul> block.
 
-    headings.forEach((heading) => {
-      // Create a regex that finds lines matching "1. Market Potential" exactly (case-insensitive)
-      const regex = new RegExp(heading.replace(".", "\\."), "gi");
-      result = result.replace(regex, (match) => {
-        // Insert the exact text as an <h2> with a subtle purple color
-        return `<h2 style="font-size:1.4rem; font-weight:bold; margin-top:1rem; color:#8A2BE2;">${match}</h2>`;
-      });
+    const lines = rawText.split("\n");
+    let html = "";
+    let inList = false;
+
+    lines.forEach((line) => {
+      const trimmed = line.trim();
+
+      if (trimmed.startsWith("## ")) {
+        // Close any open list
+        if (inList) {
+          html += "</ul>";
+          inList = false;
+        }
+        // Create an <h2> from the heading
+        const headingText = trimmed.replace("## ", "").trim();
+        html += `<h2 style="font-size:1.4rem; font-weight:bold; margin-top:1rem; color:#8A2BE2;">${headingText}</h2>`;
+      } else if (trimmed.startsWith("- ")) {
+        // Bullet point
+        if (!inList) {
+          // open a new list
+          html += `<ul style="margin:0 0 1rem 1.5rem; padding:0;">`;
+          inList = true;
+        }
+        const bulletText = trimmed.replace("- ", "").trim();
+        html += `<li style="margin-bottom:0.5rem;">${bulletText}</li>`;
+      } else if (trimmed.length > 0) {
+        // Close any open list
+        if (inList) {
+          html += "</ul>";
+          inList = false;
+        }
+        // It's a normal paragraph
+        html += `<p style="margin-top:0.5rem;">${trimmed}</p>`;
+      }
+      // if it's an empty line, we ignore or close the list if needed
     });
 
-    return new NextResponse(result.trim(), {
+    // Close any final open list
+    if (inList) {
+      html += "</ul>";
+      inList = false;
+    }
+
+    // Return as HTML
+    return new NextResponse(html.trim(), {
       status: 200,
       headers: { "Content-Type": "text/html" },
     });
