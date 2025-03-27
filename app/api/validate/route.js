@@ -40,7 +40,7 @@ Business Idea: ${idea}
           { role: "system", content: systemPrompt },
           { role: "user", content: `Business Idea: ${idea}` },
         ],
-        max_tokens: 1000,
+        max_tokens: 1250,
         temperature: 0.7,
       },
       {
