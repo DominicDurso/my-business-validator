@@ -1,6 +1,6 @@
 // app/layout.tsx
 import React, { CSSProperties } from "react";
-import "app/globals.css"; // Import your global CSS
+import "./globals.css"; // Correct relative import now
 
 export const metadata = {
   title: "AI Business Validator",
