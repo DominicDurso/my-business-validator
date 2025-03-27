@@ -56,22 +56,15 @@ ${JSON.stringify(trendsData, null, 2)}
 Business Idea: ${idea}
     `;
 
-    // Call OpenAI API with the system prompt including trends data
+    // Call OpenAI API with the prompt
     const openaiResponse = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
         model: "gpt-3.5-turbo", // or "gpt-4" if available
         messages: [
-          {
-            role: "system",
-            content: systemPrompt,
-          },
-          {
-            role: "user",
-            content: `Business Idea: ${idea}`,
-          },
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Business Idea: ${idea}` },
         ],
-        // Increase max_tokens if you need a longer output
         max_tokens: 700,
         temperature: 0.7,
       },
@@ -83,21 +76,27 @@ Business Idea: ${idea}
       }
     );
 
-    // Raw AI response
-    const result = openaiResponse.data.choices[0].message.content;
+    // Raw AI response text
+    let result = openaiResponse.data.choices[0].message.content;
 
-    // POST-PROCESS: Remove Markdown symbols (# and *) to clean up the output
-    let cleanedResult = result
-      .replace(/#/g, "")   // remove all '#' characters
-      .replace(/\*/g, ""); // remove all '*' characters
+    // Remove Markdown symbols
+    result = result.replace(/#/g, "").replace(/\*/g, "");
 
-    // Return the cleaned output
-    return new NextResponse(cleanedResult.trim(), {
+    // Transform known headings into <h2> tags with a purple accent
+    const headings = ["Market Potential", "Competition", "Viability", "Risks", "Recommendations"];
+    headings.forEach((heading) => {
+      const regex = new RegExp(`[0-9]*[.)]*\\s*${heading}[:]*`, "gi");
+      result = result.replace(regex, () => {
+        return `<h2 style="font-size:1.4rem; font-weight:bold; margin-top:1rem; color:#8A2BE2;">${heading}</h2>`;
+      });
+    });
+
+    return new NextResponse(result.trim(), {
       status: 200,
-      headers: { "Content-Type": "text/plain" },
+      headers: { "Content-Type": "text/html" },
     });
   } catch (error) {
     console.error("OpenAI API Error:", error.response?.data || error.message);
-    return new NextResponse("Error processing request", { status: 500 });
+    return new NextResponse("Sorry, there are technical difficulties currently.", { status: 500 });
   }
 }
