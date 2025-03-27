@@ -74,7 +74,10 @@ export default function RootLayout({
           </header>
           {children}
           <footer style={layoutStyles.footer}>
-            <p>© {new Date().getFullYear()} AI Business Validator. All rights reserved.</p>
+            <p>
+              © {new Date().getFullYear()} AI Business Validator. All rights
+              reserved.
+            </p>
           </footer>
           <style jsx>{`
             .navLink:hover {

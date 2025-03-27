@@ -1,3 +1,4 @@
+// app/about/page.tsx
 "use client";
 
 import React, { CSSProperties } from "react";
@@ -35,17 +36,12 @@ export default function About() {
       <section style={styles.contentSection}>
         <h2 style={styles.heading}>Our Mission</h2>
         <p style={styles.paragraph}>
-          AI Business Validator is designed to empower entrepreneurs by providing fast,
-          data-driven insights into the viability of their business ideas. Our goal is to
-          save time, reduce risk, and help innovators bring their concepts to life with confidence.
+          AI Business Validator is designed to empower entrepreneurs by providing fast, data-driven insights into the viability of their business ideas. Our goal is to save time, reduce risk, and help innovators bring their concepts to life with confidence.
         </p>
 
         <h2 style={styles.heading}>How It Works</h2>
         <p style={styles.paragraph}>
-          By leveraging advanced AI and real-world data sources like Google Trends, our platform
-          analyzes key aspects of your business idea – from market potential to competitive challenges.
-          The result is a clear, actionable evaluation that helps you understand the strengths and
-          potential pitfalls of your concept.
+          By leveraging advanced AI and real-world data sources like Google Trends, our platform analyzes key aspects of your business idea – from market potential to competitive challenges. The result is a clear, actionable evaluation that helps you understand the strengths and potential pitfalls of your concept.
         </p>
 
         <h2 style={styles.heading}>Why Choose Us?</h2>
