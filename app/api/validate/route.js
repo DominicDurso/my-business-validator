@@ -71,6 +71,7 @@ Business Idea: ${idea}
             content: `Business Idea: ${idea}`,
           },
         ],
+        // Increase max_tokens if you need a longer output
         max_tokens: 700,
         temperature: 0.7,
       },
@@ -82,9 +83,16 @@ Business Idea: ${idea}
       }
     );
 
+    // Raw AI response
     const result = openaiResponse.data.choices[0].message.content;
 
-    return new NextResponse(result.trim(), {
+    // POST-PROCESS: Remove Markdown symbols (# and *) to clean up the output
+    let cleanedResult = result
+      .replace(/#/g, "")   // remove all '#' characters
+      .replace(/\*/g, ""); // remove all '*' characters
+
+    // Return the cleaned output
+    return new NextResponse(cleanedResult.trim(), {
       status: 200,
       headers: { "Content-Type": "text/plain" },
     });
