@@ -40,10 +40,12 @@ const styles: StyleMap = {
     fontSize: "1rem",
     transition: "color 0.2s ease",
   },
+  // Darker hero background
   hero: {
-    textAlign: "center" as const, // 'center' is valid, sometimes TS wants a const assertion
+    textAlign: "center" as const,
     padding: "2rem 1rem",
-    background: "linear-gradient(90deg, #1a1a1a, #333)",
+    // Darker gradient
+    background: "linear-gradient(90deg, #0c0c0c, #1c1c1c)",
   },
   heroTitle: {
     fontSize: "2rem",
@@ -223,6 +225,7 @@ export default function Home() {
         <section style={styles.responseSection}>
           <div
             style={styles.responseContent}
+            // We return HTML from the API, so we render it directly
             dangerouslySetInnerHTML={{ __html: response }}
           />
         </section>
