@@ -1,5 +1,6 @@
 // app/layout.tsx
 import React, { CSSProperties } from "react";
+import "app/globals.css"; // Import your global CSS
 
 export const metadata = {
   title: "AI Business Validator",
@@ -42,7 +43,6 @@ const layoutStyles: StyleMap = {
     color: "#fff",
     textDecoration: "none",
     fontSize: "1rem",
-    transition: "transform 0.2s ease, color 0.2s ease",
   },
   footer: {
     width: "100%",
@@ -79,12 +79,6 @@ export default function RootLayout({
               reserved.
             </p>
           </footer>
-          <style jsx>{`
-            .navLink:hover {
-              transform: scale(1.05);
-              color: #da00ff;
-            }
-          `}</style>
         </div>
       </body>
     </html>
